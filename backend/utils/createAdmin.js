@@ -13,25 +13,25 @@ const createAdmin = async () => {
     const phone = process.env.ADMIN_PHONE || '03001234567';
     const password = process.env.ADMIN_PASSWORD || 'Admin@12345';
 
-    // Check karo admin pehle se hai?
+    // Check if admin already exists
     const existing = await User.findOne({ $or: [{ email }, { phone }] });
 
     if (existing) {
       if (existing.role === 'admin') {
-        console.log('⚠️ Admin pehle se maujood hai:', existing.email);
+        console.log('⚠️ Admin already exists:', existing.email);
         process.exit(0);
       }
-      // Existing user ko admin banao
+      // Make the existing user an admin
       existing.role = 'admin';
       existing.isPhoneVerified = true;
       existing.isEmailVerified = true;
       existing.verificationBadge = 'verified';
       await existing.save();
-      console.log('✅ Existing user ko admin bana diya:', existing.email);
+      console.log('✅ Existing user promoted to admin:', existing.email);
       process.exit(0);
     }
 
-    // Naya admin banao
+    // Create a new admin
     const admin = await User.create({
       name: 'Admin',
       email,
@@ -44,16 +44,16 @@ const createAdmin = async () => {
     });
 
     console.log('\n' + '='.repeat(50));
-    console.log('✅ Admin ban gaya!');
+    console.log('Admin created!');
     console.log('='.repeat(50));
-    console.log('📧 Email:    ', email);
-    console.log('📱 Phone:    ', phone);
-    console.log('🔑 Password: ', password);
+    console.log('Email:    ', email);
+    console.log(' Phone:    ', phone);
+    console.log(' Password: ', password);
     console.log('='.repeat(50) + '\n');
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error(' Error:', error.message);
     process.exit(1);
   }
 };

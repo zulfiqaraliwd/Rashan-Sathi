@@ -10,9 +10,9 @@ const sendOTP = async (phone, otp) => {
 
   if (provider === 'console') {
     console.log('\n' + '='.repeat(50));
-    console.log(`📱 OTP for ${phone}`);
-    console.log(`🔑 Code: ${otp}`);
-    console.log(`⏰ Expires in: ${process.env.OTP_EXPIRY_MINUTES || 10} minutes`);
+    console.log(` OTP for ${phone}`);
+    console.log(`Code: ${otp}`);
+    console.log(` Expires in: ${process.env.OTP_EXPIRY_MINUTES || 10} minutes`);
     console.log('='.repeat(50) + '\n');
     return { success: true, provider: 'console' };
   }

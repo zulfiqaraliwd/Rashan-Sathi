@@ -21,11 +21,11 @@ const transactionSchema = new mongoose.Schema(
     },
 
     // Amount breakdown (PKR)
-    amount: { type: Number, required: true }, // saman ki qeemat
+    amount: { type: Number, required: true }, // price of items
     serviceFee: { type: Number, default: 0 }, // platform/shopper fee
-    platformCommission: { type: Number, default: 0 }, // platform ka cut
-    totalAmount: { type: Number, required: true }, // jo requester ne pay kiya
-    shopperPayout: { type: Number, required: true }, // jo shopper ko milega
+    platformCommission: { type: Number, default: 0 }, // platform's cut
+    totalAmount: { type: Number, required: true }, // what the requester paid
+    shopperPayout: { type: Number, required: true }, // what the shopper will receive
 
     // Payment method
     paymentMethod: {

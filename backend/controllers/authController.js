@@ -12,14 +12,14 @@ const signup = async (req, res, next) => {
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, phone aur password are mandatory',
+        message: 'Name, email, phone and password are mandatory',
       });
     }
 
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Password kam az kam 6 characters ka ho',
+        message: 'Password must be at least 6 characters',
       });
     }
 
@@ -31,7 +31,7 @@ const signup = async (req, res, next) => {
       const field = existingUser.email === email.toLowerCase() ? 'Email' : 'Phone';
       return res.status(400).json({
         success: false,
-        message: `${field} pehle se registered hai`,
+        message: `${field} is already registered`,
       });
     }
 
@@ -55,7 +55,7 @@ const signup = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Account ban gaya! Phone verify karne ke liye OTP bheja gaya hai.',
+      message: 'Account created! An OTP has been sent to verify your phone.',
       token,
       user: {
         _id: user._id,
@@ -81,7 +81,7 @@ const login = async (req, res, next) => {
     if (!identifier || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email/phone aur password zaroori hain',
+        message: 'Email/phone and password are required',
       });
     }
 
@@ -92,14 +92,14 @@ const login = async (req, res, next) => {
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({
         success: false,
-        message: 'Email/phone ya password ghalat hai',
+        message: 'Email/phone or password is incorrect',
       });
     }
 
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
-        message: 'Account deactivate hai',
+        message: 'Account is deactivated',
       });
     }
 
@@ -107,7 +107,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Login kamyab!',
+      message: 'Login successful!',
       token,
       user: {
         _id: user._id,
@@ -126,7 +126,7 @@ const login = async (req, res, next) => {
   }
 };
 
-// @desc   OTP verify
+// @desc   Verify OTP
 // @route  POST /api/auth/verify-otp
 // @access Private
 const verifyOTP = async (req, res, next) => {
@@ -134,31 +134,31 @@ const verifyOTP = async (req, res, next) => {
     const { otp } = req.body;
 
     if (!otp) {
-      return res.status(400).json({ success: false, message: 'OTP daalein' });
+      return res.status(400).json({ success: false, message: 'Please enter OTP' });
     }
 
     const user = await User.findById(req.user._id).select('+otp +otpExpiry');
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     if (!user.otp || !user.otpExpiry) {
       return res.status(400).json({
         success: false,
-        message: 'Koi OTP request nahi mili. Dobara bhejein.',
+        message: 'No OTP request found. Please resend.',
       });
     }
 
     if (user.otpExpiry < new Date()) {
       return res.status(400).json({
         success: false,
-        message: 'OTP expire ho gaya. Naya OTP bhejein.',
+        message: 'OTP has expired. Please resend a new OTP.',
       });
     }
 
     if (user.otp !== otp) {
-      return res.status(400).json({ success: false, message: 'Ghalat OTP' });
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
     }
 
     user.isPhoneVerified = true;
@@ -168,7 +168,7 @@ const verifyOTP = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Phone verify ho gaya! ✅',
+      message: 'Phone verified! ✅',
       user: {
         _id: user._id,
         name: user.name,
@@ -188,13 +188,13 @@ const resendOTP = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     if (user.isPhoneVerified) {
       return res.status(400).json({
         success: false,
-        message: 'Phone pehle se verified hai',
+        message: 'Phone is already verified',
       });
     }
 
@@ -207,7 +207,7 @@ const resendOTP = async (req, res, next) => {
 
     await sendOTP(user.phone, otp);
 
-    res.status(200).json({ success: true, message: 'Naya OTP bhej diya gaya' });
+    res.status(200).json({ success: true, message: 'A new OTP has been sent' });
   } catch (error) {
     next(error);
   }
@@ -241,7 +241,7 @@ const updateProfile = async (req, res, next) => {
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     if (name) user.name = name;
@@ -275,7 +275,7 @@ const updateProfile = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Profile update ho gayi ✅',
+      message: 'Profile updated ✅',
       user,
     });
   } catch (error) {

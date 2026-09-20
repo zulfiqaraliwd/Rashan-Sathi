@@ -12,7 +12,7 @@ const {
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
-// Saare admin routes pe protect + adminOnly
+// All admin routes require protect + adminOnly
 router.use(protect, adminOnly);
 
 // Stats (dashboard)

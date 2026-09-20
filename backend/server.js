@@ -38,7 +38,7 @@ app.use(morgan('dev'));
 
 // Health
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Rashan Sathi API chal rahi hai 🚀' });
+  res.json({ status: 'ok', message: 'api is working' });
 });
 
 // Routes
@@ -57,5 +57,5 @@ chatSocket(io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

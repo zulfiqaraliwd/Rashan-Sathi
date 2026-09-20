@@ -1,8 +1,8 @@
 const cloudinary = require('../config/cloudinary');
 
 /**
- * Image ko Cloudinary pe upload karo (buffer se)
- * @param {Buffer} buffer - File ka buffer
+ * Upload image to Cloudinary (from buffer)
+ * @param {Buffer} buffer - File buffer
  * @param {string} folder - Cloudinary folder name
  * @returns {object} Cloudinary response
  */
@@ -27,7 +27,7 @@ const uploadToCloudinary = (buffer, folder = 'rashan-sathi') => {
   });
 };
 
-// @desc   Ek image upload karo
+// @desc   Upload a single image
 // @route  POST /api/upload/single
 // @access Private
 const uploadSingle = async (req, res, next) => {
@@ -35,7 +35,7 @@ const uploadSingle = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'Koi image nahi bheji gayi',
+        message: 'No image was sent',
       });
     }
 
@@ -44,7 +44,7 @@ const uploadSingle = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Image upload ho gayi ✅',
+      message: 'Image uploaded ✅',
       image: {
         url: result.secure_url,
         publicId: result.public_id,
@@ -59,7 +59,7 @@ const uploadSingle = async (req, res, next) => {
   }
 };
 
-// @desc   Multiple images upload karo
+// @desc   Upload multiple images
 // @route  POST /api/upload/multiple
 // @access Private
 const uploadMultiple = async (req, res, next) => {
@@ -67,7 +67,7 @@ const uploadMultiple = async (req, res, next) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Koi image nahi bheji gayi',
+        message: 'No images were sent',
       });
     }
 
@@ -89,7 +89,7 @@ const uploadMultiple = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `${images.length} images upload ho gayin ✅`,
+      message: `${images.length} images uploaded ✅`,
       images,
     });
   } catch (error) {
@@ -97,7 +97,7 @@ const uploadMultiple = async (req, res, next) => {
   }
 };
 
-// @desc   Image delete karo (Cloudinary se)
+// @desc   Delete image (from Cloudinary)
 // @route  DELETE /api/upload/:publicId
 // @access Private
 const deleteImage = async (req, res, next) => {
@@ -107,7 +107,7 @@ const deleteImage = async (req, res, next) => {
     if (!publicId) {
       return res.status(400).json({
         success: false,
-        message: 'Public ID zaroori hai',
+        message: 'Public ID is required',
       });
     }
 
@@ -116,13 +116,13 @@ const deleteImage = async (req, res, next) => {
     if (result.result === 'ok') {
       return res.status(200).json({
         success: true,
-        message: 'Image delete ho gayi',
+        message: 'Image deleted',
       });
     }
 
     res.status(404).json({
       success: false,
-      message: 'Image nahi mili ya pehle hi delete ho chuki hai',
+      message: 'Image not found or already deleted',
     });
   } catch (error) {
     next(error);

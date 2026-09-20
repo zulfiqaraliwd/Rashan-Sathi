@@ -1,5 +1,5 @@
 const notFound = (req, res, next) => {
-  const error = new Error(`Route nahi mila: ${req.originalUrl}`);
+  const error = new Error(`Route not found: ${req.originalUrl}`);
   res.status(404);
   next(error);
 };
@@ -10,7 +10,7 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
     statusCode = 404;
-    message = 'Resource nahi mila (invalid ID)';
+    message = 'Resource not found (invalid ID)';
   }
 
   if (err.name === 'ValidationError') {
@@ -21,16 +21,16 @@ const errorHandler = (err, req, res, next) => {
   if (err.code === 11000) {
     statusCode = 400;
     const field = Object.keys(err.keyValue)[0];
-    message = `Ye ${field} pehle se registered hai`;
+    message = `This ${field} is already registered`;
   }
 
   if (err.name === 'JsonWebTokenError') {
     statusCode = 401;
-    message = 'Invalid token. Dobara login karein.';
+    message = 'Invalid token. Please login again.';
   }
   if (err.name === 'TokenExpiredError') {
     statusCode = 401;
-    message = 'Token expire ho gaya. Dobara login karein.';
+    message = 'Token has expired. Please login again.';
   }
 
   res.status(statusCode).json({

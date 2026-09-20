@@ -1,7 +1,7 @@
 const Review = require('../models/Review');
 const Request = require('../models/Request');
 
-// @desc   Review do
+// @desc   Create a review
 // @route  POST /api/reviews
 // @access Private
 const createReview = async (req, res, next) => {
@@ -11,26 +11,26 @@ const createReview = async (req, res, next) => {
     if (!requestId || !rating) {
       return res.status(400).json({
         success: false,
-        message: 'Request ID aur rating zaroori hain',
+        message: 'Request ID and rating are required',
       });
     }
 
     if (rating < 1 || rating > 5) {
       return res.status(400).json({
         success: false,
-        message: 'Rating 1 se 5 ke darmiyan ho',
+        message: 'Rating must be between 1 and 5',
       });
     }
 
     const request = await Request.findById(requestId);
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Request nahi mili' });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
     if (request.status !== 'paid') {
       return res.status(400).json({
         success: false,
-        message: 'Review sirf paid order pe di ja sakti hai',
+        message: 'Review can only be given on a paid order',
       });
     }
 
@@ -39,7 +39,7 @@ const createReview = async (req, res, next) => {
     const isShopper = request.shopperId.toString() === userId;
 
     if (!isRequester && !isShopper) {
-      return res.status(403).json({ success: false, message: 'Permission nahi' });
+      return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
     const toUserId = isRequester ? request.shopperId : request.requesterId;
@@ -49,7 +49,7 @@ const createReview = async (req, res, next) => {
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: 'Aap pehle hi review de chuke hain',
+        message: 'You have already submitted a review',
       });
     }
 
@@ -62,7 +62,7 @@ const createReview = async (req, res, next) => {
       reviewerRole,
     });
 
-    // Request pe flag set karo
+    // Set flag on request
     if (isRequester) {
       request.isRatedByRequester = true;
     } else {
@@ -72,7 +72,7 @@ const createReview = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Review submit ho gayi ✅',
+      message: 'Review submitted ✅',
       review,
     });
   } catch (error) {
@@ -80,7 +80,7 @@ const createReview = async (req, res, next) => {
   }
 };
 
-// @desc   Kisi user ki saari reviews dekho
+// @desc   Get all reviews for a user
 // @route  GET /api/reviews/user/:userId
 // @access Public
 const getUserReviews = async (req, res, next) => {

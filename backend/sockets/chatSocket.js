@@ -100,7 +100,7 @@ const chatSocket = (io) => {
     });
 
     socket.on('disconnect', () => {
-      console.log(`❌ Socket disconnected: ${socket.user.name}`);
+      console.log(`Socket disconnected: ${socket.user.name}`);
     });
   });
 };

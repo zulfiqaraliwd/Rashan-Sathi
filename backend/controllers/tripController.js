@@ -1,7 +1,7 @@
 const Trip = require('../models/Trip');
 const Request = require('../models/Request');
 
-// @desc   Naya trip post karo
+// @desc   Post a new trip
 // @route  POST /api/trips
 // @access Private (verified only)
 const createTrip = async (req, res, next) => {
@@ -21,21 +21,21 @@ const createTrip = async (req, res, next) => {
     if (!storeName || !address || !coordinates || !departureTime || !returnTime) {
       return res.status(400).json({
         success: false,
-        message: 'Store, address, location aur time window zaroori hain',
+        message: 'Store, address, location and time window are required',
       });
     }
 
     if (coordinates.length !== 2) {
       return res.status(400).json({
         success: false,
-        message: 'Coordinates [longitude, latitude] format mein dein',
+        message: 'Provide coordinates in [longitude, latitude] format',
       });
     }
 
     if (new Date(departureTime) >= new Date(returnTime)) {
       return res.status(400).json({
         success: false,
-        message: 'Return time departure se baad honi chahiye',
+        message: 'Return time must be after departure time',
       });
     }
 
@@ -53,14 +53,14 @@ const createTrip = async (req, res, next) => {
       status: 'open',
     });
 
-    // User stats update
+    // Update user stats
     await require('../models/User').findByIdAndUpdate(req.user._id, {
       $inc: { totalTripsPosted: 1 },
     });
 
     res.status(201).json({
       success: true,
-      message: 'Trip post ho gaya ✅',
+      message: 'Trip posted ✅',
       trip,
     });
   } catch (error) {
@@ -68,7 +68,7 @@ const createTrip = async (req, res, next) => {
   }
 };
 
-// @desc   Nearby trips dekho (geospatial search)
+// @desc   Get nearby trips (geospatial search)
 // @route  GET /api/trips/nearby?lng=67.0011&lat=24.8607&radius=5
 // @access Private
 const getNearbyTrips = async (req, res, next) => {
@@ -78,7 +78,7 @@ const getNearbyTrips = async (req, res, next) => {
     if (!lng || !lat) {
       return res.status(400).json({
         success: false,
-        message: 'Longitude aur latitude zaroori hain',
+        message: 'Longitude and latitude are required',
       });
     }
 
@@ -111,7 +111,7 @@ const getNearbyTrips = async (req, res, next) => {
   }
 };
 
-// @desc   Apne trips dekho
+// @desc   Get your trips
 // @route  GET /api/trips/my
 // @access Private
 const getMyTrips = async (req, res, next) => {
@@ -126,7 +126,7 @@ const getMyTrips = async (req, res, next) => {
   }
 };
 
-// @desc   Ek trip ki details
+// @desc   Get details of a single trip
 // @route  GET /api/trips/:id
 // @access Private
 const getTripById = async (req, res, next) => {
@@ -137,7 +137,7 @@ const getTripById = async (req, res, next) => {
     );
 
     if (!trip) {
-      return res.status(404).json({ success: false, message: 'Trip nahi mila' });
+      return res.status(404).json({ success: false, message: 'Trip not found' });
     }
 
     const requests = await Request.find({ tripId: trip._id })
@@ -150,7 +150,7 @@ const getTripById = async (req, res, next) => {
   }
 };
 
-// @desc   Trip cancel karo
+// @desc   Cancel trip
 // @route  DELETE /api/trips/:id
 // @access Private
 const cancelTrip = async (req, res, next) => {
@@ -158,39 +158,39 @@ const cancelTrip = async (req, res, next) => {
     const trip = await Trip.findById(req.params.id);
 
     if (!trip) {
-      return res.status(404).json({ success: false, message: 'Trip nahi mila' });
+      return res.status(404).json({ success: false, message: 'Trip not found' });
     }
 
     if (trip.shopperId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Sirf apni trip cancel kar sakte ho',
+        message: 'You can only cancel your own trip',
       });
     }
 
     if (trip.status === 'completed') {
       return res.status(400).json({
         success: false,
-        message: 'Completed trip cancel nahi ho sakti',
+        message: 'Completed trip cannot be cancelled',
       });
     }
 
     trip.status = 'cancelled';
     await trip.save();
 
-    // Saari pending requests bhi cancel karo
+    // Also cancel all pending requests
     await Request.updateMany(
       { tripId: trip._id, status: { $in: ['requested', 'accepted'] } },
-      { status: 'cancelled', cancellationReason: 'Shopper ne trip cancel kar di' }
+      { status: 'cancelled', cancellationReason: 'Shopper cancelled the trip' }
     );
 
-    res.status(200).json({ success: true, message: 'Trip cancel ho gayi', trip });
+    res.status(200).json({ success: true, message: 'Trip cancelled', trip });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc   Trip update karo (status change)
+// @desc   Update trip (status change)
 // @route  PUT /api/trips/:id
 // @access Private
 const updateTripStatus = async (req, res, next) => {
@@ -199,11 +199,11 @@ const updateTripStatus = async (req, res, next) => {
 
     const trip = await Trip.findById(req.params.id);
     if (!trip) {
-      return res.status(404).json({ success: false, message: 'Trip nahi mila' });
+      return res.status(404).json({ success: false, message: 'Trip not found' });
     }
 
     if (trip.shopperId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Permission nahi' });
+      return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
     const allowed = ['open', 'full', 'in-progress', 'completed', 'cancelled'];
@@ -214,7 +214,7 @@ const updateTripStatus = async (req, res, next) => {
     trip.status = status;
     await trip.save();
 
-    res.status(200).json({ success: true, message: 'Trip status update', trip });
+    res.status(200).json({ success: true, message: 'Trip status updated', trip });
   } catch (error) {
     next(error);
   }

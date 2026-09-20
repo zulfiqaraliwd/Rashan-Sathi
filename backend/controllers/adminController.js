@@ -4,7 +4,7 @@ const Request = require('../models/Request');
 const Transaction = require('../models/Transaction');
 const Review = require('../models/Review');
 
-// @desc   Saare users dekho
+// @desc   Get all users
 // @route  GET /api/admin/users?page=1&limit=20&search=&role=
 // @access Private/Admin
 const getAllUsers = async (req, res, next) => {
@@ -40,14 +40,14 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
-// @desc   Ek user ki details
+// @desc   Get details of a specific user by ID
 // @route  GET /api/admin/users/:id
 // @access Private/Admin
 const getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     const [trips, requests, transactions] = await Promise.all([
@@ -68,20 +68,20 @@ const getUserById = async (req, res, next) => {
   }
 };
 
-// @desc   User ko ban/unban karo
+// @desc   Ban/unban a user
 // @route  PUT /api/admin/users/:id/toggle-active
 // @access Private/Admin
 const toggleUserActive = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     if (user.role === 'admin') {
       return res.status(400).json({
         success: false,
-        message: 'Admin ko ban nahi kar sakte',
+        message: 'Cannot ban an admin',
       });
     }
 
@@ -90,7 +90,7 @@ const toggleUserActive = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: user.isActive ? 'User activate ho gaya' : 'User ban ho gaya',
+      message: user.isActive ? 'User activated' : 'User banned',
       user,
     });
   } catch (error) {
@@ -98,7 +98,7 @@ const toggleUserActive = async (req, res, next) => {
   }
 };
 
-// @desc   Verification badge approve/reject karo
+// @desc   Approve/reject verification badge
 // @route  PUT /api/admin/users/:id/verification
 // @access Private/Admin
 const updateVerification = async (req, res, next) => {
@@ -108,7 +108,7 @@ const updateVerification = async (req, res, next) => {
     if (!['none', 'pending', 'verified'].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status. Use: none, pending, ya verified',
+        message: 'Invalid status. Use: none, pending, or verified',
       });
     }
 
@@ -119,12 +119,12 @@ const updateVerification = async (req, res, next) => {
     );
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User nahi mila' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     res.status(200).json({
       success: true,
-      message: `Verification badge "${status}" set ho gaya`,
+      message: `Verification badge set to "${status}"`,
       user,
     });
   } catch (error) {
@@ -132,7 +132,7 @@ const updateVerification = async (req, res, next) => {
   }
 };
 
-// @desc   Saare disputes dekho
+// @desc   Get all disputes
 // @route  GET /api/admin/disputes
 // @access Private/Admin
 const getAllDisputes = async (req, res, next) => {
@@ -153,7 +153,7 @@ const getAllDisputes = async (req, res, next) => {
   }
 };
 
-// @desc   Dispute resolve karo
+// @desc   Resolve a dispute
 // @route  PUT /api/admin/disputes/:id/resolve
 // @access Private/Admin
 const resolveDispute = async (req, res, next) => {
@@ -163,7 +163,7 @@ const resolveDispute = async (req, res, next) => {
     if (!resolution) {
       return res.status(400).json({
         success: false,
-        message: 'Resolution note zaroori hai',
+        message: 'Resolution note is required',
       });
     }
 
@@ -171,7 +171,7 @@ const resolveDispute = async (req, res, next) => {
     if (!transaction) {
       return res.status(404).json({
         success: false,
-        message: 'Transaction nahi mili',
+        message: 'Transaction not found',
       });
     }
 
@@ -185,14 +185,14 @@ const resolveDispute = async (req, res, next) => {
 
     await transaction.save();
 
-    // Request status bhi update karo
+    // Also update request status
     await Request.findByIdAndUpdate(transaction.requestId, {
       status: 'paid',
     });
 
     res.status(200).json({
       success: true,
-      message: 'Dispute resolve ho gaya ✅',
+      message: 'Dispute resolved ✅',
       transaction,
     });
   } catch (error) {
@@ -200,7 +200,7 @@ const resolveDispute = async (req, res, next) => {
   }
 };
 
-// @desc   Saari transactions dekho
+// @desc   Get all transactions
 // @route  GET /api/admin/transactions?page=1&limit=20&status=
 // @access Private/Admin
 const getAllTransactions = async (req, res, next) => {
@@ -236,7 +236,7 @@ const getAllTransactions = async (req, res, next) => {
   }
 };
 
-// @desc   Platform stats dekho (dashboard ke liye)
+// @desc   Get platform stats (for dashboard)
 // @route  GET /api/admin/stats
 // @access Private/Admin
 const getStats = async (req, res, next) => {

@@ -14,7 +14,7 @@ const protect = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Login zaroori hai. Token nahi mila.',
+      message: 'Login required. Token not found.',
     });
   }
 
@@ -25,14 +25,14 @@ const protect = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User nahi mila. Dobara login karein.',
+        message: 'User not found. Please login again.',
       });
     }
 
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
-        message: 'Account deactivate hai. Support se rabta karein.',
+        message: 'Account is deactivated. Please contact support.',
       });
     }
 
@@ -41,7 +41,7 @@ const protect = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid ya expired token. Dobara login karein.',
+      message: 'Invalid or expired token. Please login again.',
     });
   }
 };
@@ -50,7 +50,7 @@ const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === 'admin') return next();
   return res.status(403).json({
     success: false,
-    message: 'Sirf admin hi is route ko access kar sakta hai',
+    message: 'Only admin can access this route',
   });
 };
 
@@ -58,7 +58,7 @@ const verifiedOnly = (req, res, next) => {
   if (req.user && req.user.isPhoneVerified) return next();
   return res.status(403).json({
     success: false,
-    message: 'Pehle apna phone verify karein',
+    message: 'Please verify your phone first',
   });
 };
 

@@ -21,27 +21,27 @@ const requestSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Items — text list ya image
+    // Items — text list or image
     itemList: {
-      type: String, // "2 kg aata, 1 dozen anda, 1 litre doodh"
+      type: String, // "2 kg flour, 1 dozen eggs, 1 litre milk"
       required: function () {
         return !this.imageUrl;
       },
       maxlength: 1000,
     },
     imageUrl: {
-      type: String, // agar list ki photo bheji ho
+      type: String, // if a photo of the list was sent
       default: '',
     },
 
     // Budget
     budget: {
       type: Number, // PKR
-      required: [true, 'Budget zaroori hai'],
-      min: [1, 'Budget 0 se zyada ho'],
+      required: [true, 'Budget is required'],
+      min: [1, 'Budget must be greater than 0'],
     },
     actualAmount: {
-      type: Number, // shopper ne actual mein kitne ka saman liya
+      type: Number, // how much the shopper actually spent on items
       default: 0,
     },
     serviceFee: {
@@ -56,7 +56,7 @@ const requestSchema = new mongoose.Schema(
     // Delivery details
     deliveryAddress: {
       type: String,
-      required: [true, 'Delivery address zaroori hai'],
+      required: [true, 'Delivery address is required'],
     },
     deliveryLocation: {
       type: {

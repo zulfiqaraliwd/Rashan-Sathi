@@ -5,28 +5,28 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name zaroori hai'],
+      required: [true, 'Name is required'],
       trim: true,
-      maxlength: [50, 'Name 50 characters se zyada nahi ho sakta'],
+      maxlength: [50, 'Name cannot exceed 50 characters'],
     },
     email: {
       type: String,
-      required: [true, 'Email zaroori hai'],
+      required: [true, 'Email is required'],
       unique: true,
       lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, 'Valid email daalein'],
+      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
     },
     phone: {
       type: String,
-      required: [true, 'Phone number zaroori hai'],
+      required: [true, 'Phone number is required'],
       unique: true,
-      match: [/^(\+92|0)?3[0-9]{9}$/, 'Valid Pakistani number daalein (e.g. 03001234567)'],
+      match: [/^(\+92|0)?3[0-9]{9}$/, 'Please enter a valid Pakistani number (e.g. 03001234567)'],
     },
     password: {
       type: String,
-      required: [true, 'Password zaroori hai'],
-      minlength: [6, 'Password kam az kam 6 characters'],
-      select: false, // queries mein by default nahi aayega
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters'],
+      select: false, // will not be returned by default in queries
     },
 
     // Verification
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     profileImage: { type: String, default: '' },
     bio: { type: String, maxlength: 200, default: '' },
 
-    // Verification badge (CNIC ya student card etc.)
+    // Verification badge (CNIC or student card etc.)
     verificationBadge: {
       type: String,
       enum: ['none', 'pending', 'verified'],
@@ -86,7 +86,7 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ location: '2dsphere' });
 
 
-// Password hash karne se pehle
+// Before hashing the password
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);

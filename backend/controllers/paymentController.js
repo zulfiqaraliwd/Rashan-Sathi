@@ -2,7 +2,7 @@ const Transaction = require('../models/Transaction');
 const Request = require('../models/Request');
 const User = require('../models/User');
 
-// @desc   Requester: payment kiya, TRX ID + screenshot upload
+// @desc   Requester: payment made, upload TRX ID + screenshot
 // @route  POST /api/payments/:requestId/mark-paid
 // @access Private (requester)
 const markPaid = async (req, res, next) => {
@@ -11,24 +11,24 @@ const markPaid = async (req, res, next) => {
     const request = await Request.findById(req.params.requestId);
 
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Request nahi mili' });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
     if (request.requesterId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Permission nahi' });
+      return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
     if (request.status !== 'delivered') {
       return res.status(400).json({
         success: false,
-        message: 'Payment sirf delivered status pe ho sakti hai',
+        message: 'Payment can only be made on delivered status',
       });
     }
 
     if (!trxId || !paymentScreenshot) {
       return res.status(400).json({
         success: false,
-        message: 'TRX ID aur screenshot zaroori hain',
+        message: 'TRX ID and screenshot are required',
       });
     }
 
@@ -54,7 +54,7 @@ const markPaid = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Payment claim ho gayi. Shopper confirm karega.',
+      message: 'Payment claimed. Shopper will confirm.',
       transaction,
     });
   } catch (error) {
@@ -62,23 +62,23 @@ const markPaid = async (req, res, next) => {
   }
 };
 
-// @desc   Shopper: payment confirm karo (paisa aa gaya)
+// @desc   Shopper: confirm payment (money received)
 // @route  POST /api/payments/:requestId/confirm
 // @access Private (shopper)
 const confirmPayment = async (req, res, next) => {
   try {
     const request = await Request.findById(req.params.requestId);
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Request nahi mili' });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
     if (request.shopperId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Permission nahi' });
+      return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
     const transaction = await Transaction.findOne({ requestId: request._id });
     if (!transaction) {
-      return res.status(404).json({ success: false, message: 'Transaction nahi mili' });
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
 
     transaction.escrowStatus = 'confirmed';
@@ -91,7 +91,7 @@ const confirmPayment = async (req, res, next) => {
     request.paidAt = new Date();
     await request.save();
 
-    // Shopper ke earnings update karo
+    // Update shopper earnings
     await User.findByIdAndUpdate(request.shopperId, {
       $inc: {
         totalEarnings: transaction.shopperPayout,
@@ -105,7 +105,7 @@ const confirmPayment = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Payment confirm ho gayi ✅ Order complete!',
+      message: 'Payment confirmed ✅ Order complete!',
       transaction,
     });
   } catch (error) {
@@ -113,7 +113,7 @@ const confirmPayment = async (req, res, next) => {
   }
 };
 
-// @desc   Shopper: payment reject karo (paisa nahi aaya)
+// @desc   Shopper: reject payment (money not received)
 // @route  POST /api/payments/:requestId/dispute
 // @access Private (shopper)
 const disputePayment = async (req, res, next) => {
@@ -122,21 +122,21 @@ const disputePayment = async (req, res, next) => {
     const request = await Request.findById(req.params.requestId);
 
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Request nahi mili' });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
     if (request.shopperId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Permission nahi' });
+      return res.status(403).json({ success: false, message: 'Permission denied' });
     }
 
     const transaction = await Transaction.findOne({ requestId: request._id });
     if (!transaction) {
-      return res.status(404).json({ success: false, message: 'Transaction nahi mili' });
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
 
     transaction.escrowStatus = 'disputed';
     transaction.isDisputed = true;
-    transaction.disputeReason = reason || 'Paisa nahi aaya';
+    transaction.disputeReason = reason || 'Money not received';
     await transaction.save();
 
     request.status = 'disputed';
@@ -144,7 +144,7 @@ const disputePayment = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Dispute file ho gaya. Admin review karega.',
+      message: 'Dispute filed. Admin will review.',
       transaction,
     });
   } catch (error) {
@@ -152,7 +152,7 @@ const disputePayment = async (req, res, next) => {
   }
 };
 
-// @desc   Apni transactions dekho
+// @desc   Get your transactions
 // @route  GET /api/payments/my
 // @access Private
 const getMyTransactions = async (req, res, next) => {

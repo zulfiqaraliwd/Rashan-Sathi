@@ -5,7 +5,7 @@ const User = require('../models/User');
 dotenv.config();
 
 /**
- * Admin ka email aur/ya password reset karo
+ * Reset the admin's email and/or password
  *
  * Usage:
  *   npm run reset-admin -- --password=NewPass123
@@ -18,7 +18,7 @@ const resetAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB connected');
 
-    // Args parse karo
+    // Parse args
     const args = process.argv.slice(2);
     const getArg = (name) => {
       const arg = args.find((a) => a.startsWith(`--${name}=`));
@@ -30,7 +30,7 @@ const resetAdmin = async () => {
     const newPhone = getArg('phone');
 
     if (!newPassword && !newEmail && !newPhone) {
-      console.error('\n❌ Kuch to do! Examples:');
+      console.error('\n❌ Nothing to do! Examples:');
       console.error('   npm run reset-admin -- --password=NewPass123');
       console.error('   npm run reset-admin -- --email=new@email.com');
       console.error('   npm run reset-admin -- --email=new@email.com --password=NewPass123');
@@ -38,17 +38,17 @@ const resetAdmin = async () => {
       process.exit(1);
     }
 
-    // Current email se admin dhundo
+    // Find admin by current email
     const currentEmail = process.env.ADMIN_EMAIL || 'admin@rashansathi.pk';
     const admin = await User.findOne({ email: currentEmail }).select('+password');
 
     if (!admin) {
-      console.error('❌ Admin nahi mila:', currentEmail);
+      console.error('❌ Admin not found:', currentEmail);
       process.exit(1);
     }
 
     if (admin.role !== 'admin') {
-      console.error('⚠️ Ye user admin nahi hai. Role:', admin.role);
+      console.error('⚠️ This user is not an admin. Role:', admin.role);
       process.exit(1);
     }
 
@@ -60,7 +60,7 @@ const resetAdmin = async () => {
       });
 
       if (existing) {
-        console.error('❌ Ye email pehle se kisi aur user ka hai:', newEmail);
+        console.error('❌ This email already belongs to another user:', newEmail);
         process.exit(1);
       }
 
@@ -77,7 +77,7 @@ const resetAdmin = async () => {
       });
 
       if (existing) {
-        console.error('❌ Ye phone pehle se kisi aur user ka hai:', newPhone);
+        console.error('❌ This phone already belongs to another user:', newPhone);
         process.exit(1);
       }
 
@@ -89,30 +89,30 @@ const resetAdmin = async () => {
     // Password change
     if (newPassword) {
       if (newPassword.length < 6) {
-        console.error('❌ Password kam az kam 6 characters ka ho');
+        console.error('❌ Password must be at least 6 characters');
         process.exit(1);
       }
       admin.password = newPassword;
-      console.log('🔑 Password change ho gaya');
+      console.log('🔑 Password changed');
     }
 
     await admin.save();
 
     console.log('\n' + '='.repeat(50));
-    console.log('✅ Admin update ho gaya!');
+    console.log('Admin updated!');
     console.log('='.repeat(50));
-    console.log('📧 Email:    ', admin.email);
+    console.log('Email:    ', admin.email);
     console.log('📱 Phone:    ', admin.phone);
     if (newPassword) {
-      console.log('🔑 Password: ', newPassword);
+      console.log('Password: ', newPassword);
     } else {
-      console.log('🔑 Password:  (unchanged)');
+      console.log('Password:  (unchanged)');
     }
     console.log('='.repeat(50) + '\n');
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('Error:', error.message);
     process.exit(1);
   }
 };

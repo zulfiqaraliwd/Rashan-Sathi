@@ -11,11 +11,11 @@ const tripSchema = new mongoose.Schema(
 
     storeName: {
       type: String,
-      required: [true, 'Store ka naam zaroori hai'],
+      required: [true, 'Store name is required'],
       trim: true,
     },
 
-    // Trip ka pickup location (jahan se shopping karni hai)
+    // Trip's pickup location (where shopping will be done)
     location: {
       type: {
         type: String,
@@ -32,14 +32,14 @@ const tripSchema = new mongoose.Schema(
     // Time window
     departureTime: {
       type: Date,
-      required: [true, 'Departure time zaroori hai'],
+      required: [true, 'Departure time is required'],
     },
     returnTime: {
       type: Date,
-      required: [true, 'Return time zaroori hai'],
+      required: [true, 'Return time is required'],
     },
 
-    // Radius in km — is radius ke andar wale requesters ko dikhega
+    // Radius in km — requesters within this radius will see it
     serviceRadiusKm: {
       type: Number,
       default: 3,
@@ -70,7 +70,7 @@ const tripSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Estimated service fee (PKR) — shopper decide karega
+    // Estimated service fee (PKR) — shopper will decide
     serviceFee: {
       type: Number,
       default: 100, // Rs. 100 per order (adjustable)
@@ -83,7 +83,7 @@ const tripSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Geospatial index — nearby trips dhundhne ke liye
+// Geospatial index — for finding nearby trips
 tripSchema.index({ location: '2dsphere' });
 
 // Compound index for query performance
