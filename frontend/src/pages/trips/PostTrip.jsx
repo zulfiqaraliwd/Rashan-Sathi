@@ -1,6 +1,6 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, MapPin, Clock, DollarSign, ShieldAlert, LocateFixed } from 'lucide-react';
+import { Store, MapPin, Clock, DollarSign, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuth from '../../hooks/useAuth';
 import useGeolocation from '../../hooks/useGeolocation';
@@ -10,10 +10,7 @@ import Select from '../../components/common/Select';
 import Textarea from '../../components/common/Textarea';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/common/PageHeader';
-import { Skeleton } from '../../components/common/Skeleton';
 import { PAKISTANI_CITIES, DEFAULT_COORDS } from '../../utils/constants';
-
-const LocationPicker = lazy(() => import('../../components/maps/LocationPicker'));
 
 const PostTrip = () => {
   const navigate = useNavigate();
@@ -33,25 +30,9 @@ const PostTrip = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [pin, setPin] = useState(null); // exact store location picked on the map { lat, lng }
-  const [flyTo, setFlyTo] = useState(null);
-
-  const selectedCity = PAKISTANI_CITIES.find((c) => c.name === formData.city);
-  const cityCenter = selectedCity
-    ? [selectedCity.lat, selectedCity.lng]
-    : [DEFAULT_COORDS.lat, DEFAULT_COORDS.lng];
-
-  const useMyLocation = () => {
-    if (!location) return;
-    const here = { lat: location.lat, lng: location.lng };
-    setPin(here);
-    setFlyTo(here);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name === 'city') setPin(null); // old pin belongs to the previous city
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
@@ -80,9 +61,7 @@ const PostTrip = () => {
     try {
       // Get coordinates from the city
       const city = PAKISTANI_CITIES.find((c) => c.name === formData.city);
-      const coords = pin
-        ? [pin.lng, pin.lat]
-        : city
+      const coords = city
         ? [city.lng, city.lat]
         : location
         ? [location.lng, location.lat]
@@ -175,40 +154,6 @@ const PostTrip = () => {
             </option>
           ))}
         </Select>
-
-        {/* Exact store location */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-gray-700">
-              Pin the store location <span className="font-normal text-gray-400">(optional)</span>
-            </span>
-            {location && (
-              <button
-                type="button"
-                onClick={useMyLocation}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:underline"
-              >
-                <LocateFixed className="size-4" aria-hidden="true" />
-                Use my location
-              </button>
-            )}
-          </div>
-          <Suspense fallback={<Skeleton className="h-64 rounded-2xl" />}>
-            <LocationPicker
-              key={formData.city}
-              center={cityCenter}
-              value={pin}
-              onChange={setPin}
-              flyTo={flyTo}
-              className="h-64"
-            />
-          </Suspense>
-          <p className="mt-1.5 text-xs text-gray-500">
-            {pin
-              ? 'Location pinned. Drag the pin to adjust it.'
-              : 'Tap the map to mark the exact store location. If you skip this, the city centre is used.'}
-          </p>
-        </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Input

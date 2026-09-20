@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Store, MapPin, Clock, Star, Package, Plus, X, ChevronRight, Wallet } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,11 +11,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import PageHeader from '../../components/common/PageHeader';
 import SlotMeter from '../../components/trips/SlotMeter';
-import { Skeleton } from '../../components/common/Skeleton';
-import { toLatLng } from '../../utils/geo';
 import { formatDate, formatTimeWindow } from '../../utils/formatDate';
-
-const TripMap = lazy(() => import('../../components/maps/TripMap'));
 
 const InfoTile = ({ icon: Icon, label, children }) => (
   <div className="rounded-2xl bg-gray-50 p-4">
@@ -121,20 +117,6 @@ const TripDetails = () => {
             </p>
           </InfoTile>
         </div>
-
-        {toLatLng(trip) && (
-          <div className="mt-6">
-            <Suspense fallback={<Skeleton className="h-56 rounded-2xl" />}>
-              <TripMap
-                trips={[trip]}
-                center={toLatLng(trip)}
-                zoom={15}
-                linkToTrip={false}
-                className="h-56"
-              />
-            </Suspense>
-          </div>
-        )}
 
         {trip.note && (
           <div className="mt-6 rounded-2xl border border-primary-100 bg-primary-50 p-4">

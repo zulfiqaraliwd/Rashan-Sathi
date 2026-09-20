@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Plus, Search, Route, ShoppingBasket, Wallet } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import useGeolocation from '../../hooks/useGeolocation';
@@ -8,11 +8,8 @@ import HeroRoute from '../../components/home/HeroRoute';
 import Button from '../../components/common/Button';
 import Select from '../../components/common/Select';
 import EmptyState from '../../components/common/EmptyState';
-import { Skeleton, TripCardSkeleton } from '../../components/common/Skeleton';
+import { TripCardSkeleton } from '../../components/common/Skeleton';
 import { PAKISTANI_CITIES, DEFAULT_COORDS } from '../../utils/constants';
-
-// Loaded on demand so the map library isn't part of the first page load
-const TripMap = lazy(() => import('../../components/maps/TripMap'));
 
 const steps = [
   {
@@ -222,21 +219,6 @@ const Home = () => {
               </Select>
             </div>
           </div>
-
-          {/* Map */}
-          {searchCoords && !loading && trips.length > 0 && (
-            <div className="mb-8 animate-fade">
-              <Suspense fallback={<Skeleton className="h-72 rounded-2xl sm:h-80" />}>
-                <TripMap
-                  key={`${searchCoords.lat}-${searchCoords.lng}-${radius}`}
-                  trips={trips}
-                  center={[searchCoords.lat, searchCoords.lng]}
-                  radiusKm={radius}
-                  className="h-72 sm:h-80"
-                />
-              </Suspense>
-            </div>
-          )}
 
           {/* Trips */}
           <div className="mb-5 flex items-end justify-between gap-4">
